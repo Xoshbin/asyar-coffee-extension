@@ -1,0 +1,120 @@
+{
+  "id": "org.asyar.coffee",
+  "name": "Coffee",
+  "version": "1.0.0",
+  "description": "Prevent your computer from sleeping. Cross-platform sleep-prevention utility.",
+  "author": "Asyar",
+  "searchable": true,
+  "icon": "☕",
+  "defaultView": "CaffeinateWhileView",
+  "asyarSdk": "^1.15.0",
+  "permissions": [
+    "power:inhibit",
+    "timers:schedule",
+    "timers:cancel",
+    "timers:list",
+    "application:read",
+    "app:frontmost-watch",
+    "systemEvents:read",
+    "notifications:send",
+    "storage:read",
+    "storage:write"
+  ],
+  "preferences": [
+    {
+      "name": "preventDisplay",
+      "type": "checkbox",
+      "title": "Prevent display sleep",
+      "description": "Keep the screen on.",
+      "default": true
+    },
+    {
+      "name": "preventSystem",
+      "type": "checkbox",
+      "title": "Prevent system sleep",
+      "description": "Keep the computer from entering system idle sleep.",
+      "default": true
+    },
+    {
+      "name": "preventDisk",
+      "type": "checkbox",
+      "title": "Prevent disk sleep",
+      "description": "macOS-only — Linux/Windows ignore this option.",
+      "default": true
+    },
+    {
+      "name": "hideTrayWhenIdle",
+      "type": "checkbox",
+      "title": "Hide tray icon when decaffeinated",
+      "default": false
+    }
+  ],
+  "commands": [
+    {
+      "id": "caffeinate",
+      "name": "Caffeinate",
+      "description": "Prevent your computer from sleeping indefinitely",
+      "resultType": "no-view",
+      "icon": "☕"
+    },
+    {
+      "id": "decaffeinate",
+      "name": "Decaffeinate",
+      "description": "Release the current caffeination",
+      "resultType": "no-view",
+      "icon": "🛑"
+    },
+    {
+      "id": "caffeinate-toggle",
+      "name": "Toggle Caffeination",
+      "description": "Caffeinate if idle, decaffeinate if active",
+      "resultType": "no-view",
+      "icon": "🔁"
+    },
+    {
+      "id": "caffeinate-for",
+      "name": "Caffeinate For",
+      "description": "Prevent sleep for a specified duration",
+      "resultType": "no-view",
+      "icon": "⏲️",
+      "arguments": [
+        { "name": "hours",   "type": "number", "placeholder": "Hours",   "default": 0 },
+        { "name": "minutes", "type": "number", "placeholder": "Minutes", "default": 0 },
+        { "name": "seconds", "type": "number", "placeholder": "Seconds", "default": 0 }
+      ]
+    },
+    {
+      "id": "caffeinate-until",
+      "name": "Caffeinate Until",
+      "description": "Prevent sleep until a specified clock time (HH:mm, 24-hour)",
+      "resultType": "no-view",
+      "icon": "🕐",
+      "arguments": [
+        { "name": "time", "type": "text", "placeholder": "HH:mm (24h) — wraps to tomorrow if already past", "required": true }
+      ]
+    },
+    {
+      "id": "caffeinate-while",
+      "name": "Caffeinate While",
+      "description": "Prevent sleep while a selected application is running",
+      "resultType": "view",
+      "view": "CaffeinateWhileView",
+      "icon": "🪟"
+    },
+    {
+      "id": "status",
+      "name": "Caffeination Status",
+      "description": "Show the current caffeination state",
+      "resultType": "no-view",
+      "icon": "ℹ️"
+    },
+    {
+      "id": "index",
+      "name": "Status (Background)",
+      "description": "Refresh the tray item's elapsed-time label",
+      "resultType": "no-view",
+      "icon": "⏱️",
+      "schedule": { "intervalSeconds": 60 }
+    }
+  ]
+}

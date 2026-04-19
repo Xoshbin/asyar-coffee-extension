@@ -1,0 +1,25 @@
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { fileURLToPath, URL } from 'url';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const localSdkEntry = resolve(__dirname, '../../asyar-sdk/src/index.ts');
+
+export default defineConfig(() => {
+  const useLocalSdk = existsSync(localSdkEntry);
+  console.log(
+    `\x1b[36m[Vite] (Coffee Extension)\x1b[0m Asyar-SDK: \x1b[33m${
+      useLocalSdk ? 'Local Source (' + localSdkEntry + ')' : 'node_modules (NPM)'
+    }\x1b[0m`,
+  );
+
+  return {
+    base: './',
+    plugins: [svelte()],
+    resolve: {
+      alias: useLocalSdk ? [{ find: /^asyar-sdk$/, replacement: localSdkEntry }] : undefined,
+    },
+  };
+});
