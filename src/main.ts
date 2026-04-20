@@ -11,7 +11,7 @@ import 'asyar-sdk/tokens.css';
 import { mount } from 'svelte';
 import {
   ExtensionContext,
-  ExtensionBridge,
+  extensionBridge,
   registerIconElement,
 } from 'asyar-sdk';
 import coffeeExtension from './index';
@@ -30,9 +30,8 @@ const context = new ExtensionContext();
 context.setExtensionId(extensionId);
 registerIconElement();
 
-const bridge = ExtensionBridge.getInstance();
-bridge.registerManifest(manifest as any);
-bridge.registerExtensionImplementation(extensionId, coffeeExtension);
+extensionBridge.registerManifest(manifest as any);
+extensionBridge.registerExtensionImplementation(extensionId, coffeeExtension);
 
 (async () => {
   await coffeeExtension.initialize(context);
