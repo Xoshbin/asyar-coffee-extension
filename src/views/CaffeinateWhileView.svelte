@@ -10,14 +10,14 @@
     };
   }>();
 
-  const applicationService = context.getService<IApplicationService>('application');
-
   let apps = $state<InstalledApplication[]>([]);
   let query = $state('');
   let loadError = $state<string | null>(null);
   let loading = $state(true);
+  let filterInput = $state<HTMLInputElement | null>(null);
 
   $effect(() => {
+    const applicationService = context.getService('application') as IApplicationService;
     (async () => {
       try {
         apps = await applicationService.listApplications();
@@ -29,6 +29,11 @@
     })();
   });
 
+  // Manual focus on mount avoids the `autofocus` a11y warning.
+  $effect(() => {
+    filterInput?.focus();
+  });
+
   const filtered = $derived.by(() => {
     const q = query.trim().toLowerCase();
     if (!q) return apps;
@@ -36,14 +41,14 @@
   });
 
   async function pick(app: InstalledApplication) {
-    // `InstalledApplication` has no `bundleId` field. On Linux the Rust
-    // `isRunning` treats the arg as a /proc comm name (exe basename);
-    // on Windows it's a process name. Passing `app.name` works there.
-    // On macOS `isRunning` requires the real bundleIdentifier
-    // (e.g. "com.apple.Safari") which is unavailable — that path is a
-    // known v1 limitation and tracked in docs/manual-test.md.
+    // Prefer the native bundle identifier (macOS CFBundleIdentifier /
+    // Linux StartupWMClass) populated by the scanner. Falls back to
+    // `name` on platforms or entries where the scanner couldn't extract
+    // one — the Rust `isRunning` uses process-name matching there, which
+    // treats the string as a /proc comm name (Linux) or process name
+    // (Windows).
     await coffeeExtension.controller.caffeinateWhile({
-      bundleId: app.name,
+      bundleId: app.bundleId ?? app.name,
       appName: app.name,
     });
     window.parent.postMessage({ type: 'asyar:window:hide' }, '*');
@@ -56,7 +61,7 @@
     type="text"
     placeholder="Filter applications"
     bind:value={query}
-    autofocus
+    bind:this={filterInput}
   />
   {#if loading}
     <p class="muted">Loading applications…</p>
