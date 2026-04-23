@@ -6,7 +6,6 @@
   "author": "Asyar",
   "searchable": true,
   "icon": "☕",
-  "defaultView": "CaffeinateWhileView",
   "asyarSdk": "^1.15.0",
   "permissions": [
     "power:inhibit",
@@ -54,67 +53,93 @@
       "id": "caffeinate",
       "name": "Caffeinate",
       "description": "Prevent your computer from sleeping indefinitely",
-      "resultType": "no-view",
-      "icon": "☕"
+      "icon": "☕",
+      "mode": "background"
     },
     {
       "id": "decaffeinate",
       "name": "Decaffeinate",
       "description": "Release the current caffeination",
-      "resultType": "no-view",
-      "icon": "🛑"
+      "icon": "🛑",
+      "mode": "background"
     },
     {
       "id": "caffeinate-toggle",
       "name": "Toggle Caffeination",
       "description": "Caffeinate if idle, decaffeinate if active",
-      "resultType": "no-view",
-      "icon": "🔁"
+      "icon": "🔁",
+      "mode": "background"
     },
     {
       "id": "caffeinate-for",
       "name": "Caffeinate For",
       "description": "Prevent sleep for a specified duration",
-      "resultType": "no-view",
       "icon": "⏲️",
       "arguments": [
-        { "name": "hours",   "type": "number", "placeholder": "Hours",   "default": 0 },
-        { "name": "minutes", "type": "number", "placeholder": "Minutes", "default": 0 },
-        { "name": "seconds", "type": "number", "placeholder": "Seconds", "default": 0 }
-      ]
+        {
+          "name": "hours",
+          "type": "number",
+          "placeholder": "Hours",
+          "default": 0
+        },
+        {
+          "name": "minutes",
+          "type": "number",
+          "placeholder": "Minutes",
+          "default": 0
+        },
+        {
+          "name": "seconds",
+          "type": "number",
+          "placeholder": "Seconds",
+          "default": 0
+        }
+      ],
+      "mode": "background"
     },
     {
       "id": "caffeinate-until",
       "name": "Caffeinate Until",
       "description": "Prevent sleep until a specified clock time (HH:mm, 24-hour)",
-      "resultType": "no-view",
       "icon": "🕐",
       "arguments": [
-        { "name": "time", "type": "text", "placeholder": "HH:mm (24h) — wraps to tomorrow if already past", "required": true }
-      ]
+        {
+          "name": "time",
+          "type": "text",
+          "placeholder": "HH:mm (24h) — wraps to tomorrow if already past",
+          "required": true
+        }
+      ],
+      "mode": "background"
     },
     {
       "id": "caffeinate-while",
       "name": "Caffeinate While",
       "description": "Prevent sleep while a selected application is running",
-      "resultType": "view",
-      "view": "CaffeinateWhileView",
-      "icon": "🪟"
+      "icon": "🪟",
+      "mode": "view",
+      "component": "CaffeinateWhileView"
     },
     {
       "id": "status",
       "name": "Caffeination Status",
       "description": "Show the current caffeination state",
-      "resultType": "no-view",
-      "icon": "ℹ️"
+      "icon": "ℹ️",
+      "mode": "background"
     },
     {
       "id": "index",
       "name": "Status (Background)",
       "description": "Refresh the tray item's elapsed-time label",
-      "resultType": "no-view",
       "icon": "⏱️",
-      "schedule": { "intervalSeconds": 60 }
+      "schedule": {
+        "intervalSeconds": 60
+      },
+      "mode": "background"
     }
-  ]
+  ],
+  "type": "extension",
+  "background": {
+    "main": "dist/worker.js"
+  }
 }
