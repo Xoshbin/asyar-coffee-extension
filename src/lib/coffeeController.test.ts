@@ -2,17 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { CoffeeController, type CoffeeControllerDeps } from './coffeeController';
 import { INITIAL_STATE } from './caffeineState';
 
-function makeStorage(seed: Record<string, unknown> = {}) {
-  const store = new Map<string, string>();
+function makeState(seed: Record<string, unknown> = {}) {
+  const store = new Map<string, unknown>();
   for (const [k, v] of Object.entries(seed)) {
-    store.set(k, JSON.stringify(v));
+    store.set(k, v);
   }
   return {
-    get: vi.fn(async (key: string) => store.get(key) ?? null),
-    set: vi.fn(async (key: string, value: string) => { store.set(key, value); }),
-    delete: vi.fn(async (key: string) => store.delete(key)),
-    getAll: vi.fn(async () => Object.fromEntries(store)),
-    clear: vi.fn(async () => { const n = store.size; store.clear(); return n; }),
+    get: vi.fn(async (key: string) => (store.has(key) ? store.get(key) : null)),
+    set: vi.fn(async (key: string, value: unknown) => { store.set(key, value); }),
+    subscribe: vi.fn(async () => async () => {}),
   };
 }
 
@@ -82,7 +80,7 @@ export function buildDeps(
   overrides: Partial<CoffeeControllerDeps> = {},
 ): CoffeeControllerDeps {
   return {
-    storage: makeStorage() as any,
+    state: makeState() as any,
     statusBar: makeStatusBar() as any,
     power: makePower() as any,
     timers: makeTimers() as any,
@@ -100,19 +98,19 @@ export function buildDeps(
   };
 }
 
-function lastStoredState(storage: { set: any }): unknown {
-  const calls = storage.set.mock.calls;
+function lastStoredState(state: { set: any }): unknown {
+  const calls = state.set.mock.calls;
   const last = calls[calls.length - 1];
-  return last ? JSON.parse(last[1] as string) : undefined;
+  return last ? (last[1] as unknown) : undefined;
 }
 
 describe('CoffeeController — activate', () => {
-  it('loads INITIAL_STATE from empty storage and renders idle tray', async () => {
+  it('loads INITIAL_STATE from empty state store and renders idle tray', async () => {
     const deps = buildDeps();
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
 
-    expect(deps.storage.get).toHaveBeenCalledWith('coffee:state');
+    expect(deps.state.get).toHaveBeenCalledWith('state');
     expect(ctrl.getState()).toEqual(INITIAL_STATE);
     expect(deps.statusBar.registerItem).toHaveBeenCalledTimes(1);
     const item = (deps.statusBar.registerItem as any).mock.calls[0][0];
@@ -154,18 +152,18 @@ describe('CoffeeController — caffeinate (indefinite)', () => {
       reason: expect.stringContaining('indefinite'),
     });
     expect(ctrl.getState()).toMatchObject({ mode: 'indefinite', token: 'token-1' });
-    expect(lastStoredState(deps.storage)).toMatchObject({ mode: 'indefinite', token: 'token-1' });
+    expect(lastStoredState(deps.state)).toMatchObject({ mode: 'indefinite', token: 'token-1' });
     expect(deps.statusBar.updateItem).toHaveBeenCalled();
   });
 
   it('releases a prior token before starting a new inhibitor', async () => {
-    const seeded = makeStorage({
-      'coffee:state': { mode: 'indefinite', token: 'old-token', startedAt: 0 },
+    const seeded = makeState({
+      state: { mode: 'indefinite', token: 'old-token', startedAt: 0 },
     });
     const power = makePower();
     power.keepAwake = vi.fn(async () => 'new-token');
     power.list = vi.fn(async () => [{ token: 'old-token', options: {}, reason: '', createdAt: 0 }]);
-    const deps = buildDeps({ storage: seeded as any, power: power as any });
+    const deps = buildDeps({ state: seeded as any, power: power as any });
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
 
@@ -217,8 +215,8 @@ describe('CoffeeController — decaffeinate', () => {
   });
 
   it('cancels the pending timer when leaving timed mode', async () => {
-    const seeded = makeStorage({
-      'coffee:state': {
+    const seeded = makeState({
+      state: {
         mode: 'timed', token: 'tok', startedAt: 0,
         expiresAt: 9_999_999_999, timerId: 'timer-abc',
       },
@@ -229,7 +227,7 @@ describe('CoffeeController — decaffeinate', () => {
     timers.list = vi.fn(async () => [
       { timerId: 'timer-abc', extensionId: 'org.asyar.coffee', commandId: 'decaffeinate', args: {}, fireAt: 9_999_999_999, createdAt: 0 },
     ]);
-    const deps = buildDeps({ storage: seeded as any, power: power as any, timers: timers as any });
+    const deps = buildDeps({ state: seeded as any, power: power as any, timers: timers as any });
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
     await ctrl.decaffeinate();
@@ -408,22 +406,22 @@ describe('CoffeeController — caffeinateWhile', () => {
 describe('CoffeeController — reconcile on activate', () => {
   it('resets to idle when persisted token is no longer alive', async () => {
     const deps = buildDeps({
-      storage: makeStorage({
-        'coffee:state': { mode: 'indefinite', token: 'stale', startedAt: 0 },
+      state: makeState({
+        state: { mode: 'indefinite', token: 'stale', startedAt: 0 },
       }) as any,
     });
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
     expect(ctrl.getState()).toEqual(INITIAL_STATE);
-    expect(deps.storage.set).toHaveBeenCalledWith('coffee:state', JSON.stringify(INITIAL_STATE));
+    expect(deps.state.set).toHaveBeenCalledWith('state', INITIAL_STATE);
   });
 
   it('keeps indefinite state when token is alive', async () => {
     const power = makePower();
     power.list = vi.fn(async () => [{ token: 'live-tok', options: {}, reason: '', createdAt: 0 }]);
     const deps = buildDeps({
-      storage: makeStorage({
-        'coffee:state': { mode: 'indefinite', token: 'live-tok', startedAt: 0 },
+      state: makeState({
+        state: { mode: 'indefinite', token: 'live-tok', startedAt: 0 },
       }) as any,
       power: power as any,
     });
@@ -438,8 +436,8 @@ describe('CoffeeController — reconcile on activate', () => {
     const timers = makeTimers();
     timers.list = vi.fn(async () => []);
     const deps = buildDeps({
-      storage: makeStorage({
-        'coffee:state': {
+      state: makeState({
+        state: {
           mode: 'timed', token: 'live-tok', startedAt: 0, expiresAt: 10, timerId: 'gone',
         },
       }) as any,
@@ -458,8 +456,8 @@ describe('CoffeeController — reconcile on activate', () => {
     const power = makePower();
     power.list = vi.fn(async () => [{ token: 'live-tok', options: {}, reason: '', createdAt: 0 }]);
     const deps = buildDeps({
-      storage: makeStorage({
-        'coffee:state': {
+      state: makeState({
+        state: {
           mode: 'while-app', token: 'live-tok', startedAt: 0,
           bundleId: 'com.apple.Safari', appName: 'Safari',
         },
@@ -481,8 +479,8 @@ describe('CoffeeController — reconcile on activate', () => {
     const power = makePower();
     power.list = vi.fn(async () => [{ token: 'live-tok', options: {}, reason: '', createdAt: 0 }]);
     const deps = buildDeps({
-      storage: makeStorage({
-        'coffee:state': {
+      state: makeState({
+        state: {
           mode: 'while-app', token: 'live-tok', startedAt: 0,
           bundleId: 'com.apple.Safari', appName: 'Safari',
         },

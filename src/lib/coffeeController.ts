@@ -5,8 +5,7 @@ import type {
   IApplicationService,
   ISystemEventsService,
   INotificationService,
-  IStorageService,
-} from 'asyar-sdk';
+} from 'asyar-sdk/contracts';
 import {
   INITIAL_STATE,
   describeDuration,
@@ -16,7 +15,7 @@ import { renderTrayMenu, TRAY_ITEM_ID, type TrayPrefs } from './trayMenu';
 import { toMillis, DurationError, type DurationInput } from './durationArgs';
 import { parseHhmmToFireAt, UntilError } from './untilArgs';
 
-const STATE_KEY = 'coffee:state';
+const STATE_KEY = 'state';
 
 /**
  * Synchronous view over the extension's preferences snapshot.
@@ -29,8 +28,19 @@ export interface PreferencesView {
   readonly values: Readonly<Record<string, unknown>>;
 }
 
+/**
+ * Narrow view over the launcher-brokered extension state store. The
+ * controller only needs `get`/`set`; `subscribe` is exposed on the real
+ * proxy but unused here because this extension keeps state single-writer
+ * (worker owns, view never mutates).
+ */
+export interface StateStoreView {
+  get(key: string): Promise<unknown>;
+  set(key: string, value: unknown): Promise<void>;
+}
+
 export interface CoffeeControllerDeps {
-  storage: IStorageService;
+  state: StateStoreView;
   statusBar: IStatusBarService;
   power: IPowerService;
   timers: ITimerService;
@@ -54,17 +64,9 @@ export class CoffeeController {
   }
 
   async activate(): Promise<void> {
-    const raw = await this.deps.storage.get(STATE_KEY);
-    let persisted: CoffeeState;
-    if (raw === null) {
-      persisted = INITIAL_STATE;
-    } else {
-      try {
-        persisted = JSON.parse(raw) as CoffeeState;
-      } catch {
-        persisted = INITIAL_STATE;
-      }
-    }
+    const raw = await this.deps.state.get(STATE_KEY);
+    const persisted: CoffeeState =
+      raw && typeof raw === 'object' ? (raw as CoffeeState) : INITIAL_STATE;
     await this.reconcile(persisted);
     this.wakeDisposer = this.deps.systemEvents.onSystemWake(() => this.refreshTray());
   }
@@ -194,7 +196,7 @@ export class CoffeeController {
 
   private async setState(next: CoffeeState): Promise<void> {
     this.state = next;
-    await this.deps.storage.set(STATE_KEY, JSON.stringify(next));
+    await this.deps.state.set(STATE_KEY, next);
     this.refreshTray();
   }
 

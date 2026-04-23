@@ -1,20 +1,18 @@
 <script lang="ts">
-  import type { ExtensionContext, IApplicationService, InstalledApplication } from 'asyar-sdk';
+  import type {
+    ExtensionContext,
+    IApplicationService,
+    InstalledApplication,
+  } from 'asyar-sdk/view';
 
-  let { context, coffeeExtension } = $props<{
-    context: ExtensionContext;
-    coffeeExtension: {
-      controller: {
-        caffeinateWhile: (input: { bundleId: string; appName: string }) => Promise<void>;
-      };
-    };
-  }>();
+  let { context } = $props<{ context: ExtensionContext }>();
 
   let apps = $state<InstalledApplication[]>([]);
   let query = $state('');
   let loadError = $state<string | null>(null);
   let loading = $state(true);
   let filterInput = $state<HTMLInputElement | null>(null);
+  let submitting = $state(false);
 
   $effect(() => {
     const applicationService = context.getService('application') as IApplicationService;
@@ -41,17 +39,24 @@
   });
 
   async function pick(app: InstalledApplication) {
+    if (submitting) return;
+    submitting = true;
     // Prefer the native bundle identifier (macOS CFBundleIdentifier /
     // Linux StartupWMClass) populated by the scanner. Falls back to
     // `name` on platforms or entries where the scanner couldn't extract
     // one — the Rust `isRunning` uses process-name matching there, which
     // treats the string as a /proc comm name (Linux) or process name
     // (Windows).
-    await coffeeExtension.controller.caffeinateWhile({
-      bundleId: app.bundleId ?? app.name,
-      appName: app.name,
-    });
-    window.parent.postMessage({ type: 'asyar:window:hide' }, '*');
+    try {
+      await context.request('caffeinateWhile', {
+        bundleId: app.bundleId ?? app.name,
+        appName: app.name,
+      });
+      window.parent.postMessage({ type: 'asyar:window:hide' }, '*');
+    } catch (err) {
+      loadError = err instanceof Error ? err.message : String(err);
+      submitting = false;
+    }
   }
 </script>
 
@@ -66,14 +71,14 @@
   {#if loading}
     <p class="muted">Loading applications…</p>
   {:else if loadError}
-    <p class="error">Failed to load applications: {loadError}</p>
+    <p class="error">{loadError}</p>
   {:else if filtered.length === 0}
     <p class="muted">No applications match "{query}".</p>
   {:else}
     <ul>
       {#each filtered as app (app.path ?? app.name)}
         <li>
-          <button onclick={() => pick(app)}>
+          <button onclick={() => pick(app)} disabled={submitting}>
             {app.name}
           </button>
         </li>
@@ -105,6 +110,7 @@
     cursor: pointer;
   }
   button:hover { background: rgba(0,0,0,0.05); }
+  button:disabled { opacity: 0.5; cursor: default; }
   .muted { color: #888; }
   .error { color: #c33; }
 </style>

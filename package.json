@@ -4,8 +4,8 @@
   "description": "Prevent your computer from sleeping. Cross-platform sleep-prevention utility.",
   "type": "module",
   "scripts": {
-    "dev": "asyar dev",
-    "build": "asyar build",
+    "dev": "vite",
+    "build": "vite build",
     "publish": "asyar publish",
     "link": "asyar link",
     "test": "vitest",

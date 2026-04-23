@@ -1,4 +1,4 @@
-import type { IStatusBarItem } from 'asyar-sdk';
+import type { IStatusBarItem } from 'asyar-sdk/contracts';
 import { describeDuration, isTimed, isWhileApp, type CoffeeState } from './caffeineState';
 
 export const TRAY_ITEM_ID = 'coffee-tray';
