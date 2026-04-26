@@ -15,9 +15,7 @@
     "application:read",
     "app:frontmost-watch",
     "systemEvents:read",
-    "notifications:send",
-    "storage:read",
-    "storage:write"
+    "notifications:send"
   ],
   "preferences": [
     {
