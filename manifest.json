@@ -6,7 +6,7 @@
   "author": "Asyar",
   "searchable": true,
   "icon": "☕",
-  "asyarSdk": "^2.6.0",
+  "asyarSdk": "^3.0.1",
   "permissions": [
     "power:inhibit",
     "timers:schedule",
