@@ -9,6 +9,7 @@
   "asyarSdk": "^3.0.1",
   "permissions": [
     "power:inhibit",
+    "preferences:read",
     "timers:schedule",
     "timers:cancel",
     "timers:list",

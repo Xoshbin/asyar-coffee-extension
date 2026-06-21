@@ -67,6 +67,23 @@ function makePreferences(initial: Record<string, unknown> = {}) {
   };
 }
 
+/**
+ * Models the real worker situation: `.values` boots EMPTY (the worker iframe
+ * can miss the `preferences:set-all` push), but `refresh()` fetches the
+ * authoritative snapshot from the host. The controller must call `refresh()`
+ * before trusting the keep-awake axes, otherwise every axis reads as `false`.
+ */
+function makeStalePreferences(serverValues: Record<string, unknown>) {
+  const facade = {
+    values: Object.freeze({ commands: {} }) as Readonly<Record<string, unknown>>,
+    refresh: vi.fn(async () => {
+      facade.values = Object.freeze({ ...serverValues });
+      return facade.values;
+    }),
+  };
+  return facade;
+}
+
 function makeNotifier() {
   return {
     checkPermission: vi.fn(async () => true),
@@ -171,6 +188,31 @@ describe('CoffeeController — caffeinate (indefinite)', () => {
 
     expect(deps.power.release).toHaveBeenCalledWith('old-token');
     expect(ctrl.getState()).toMatchObject({ mode: 'indefinite', token: 'new-token' });
+  });
+
+  it('refreshes an empty/stale worker prefs snapshot before reading axes', async () => {
+    const prefs = makeStalePreferences({
+      preventDisplay: true,
+      preventSystem: true,
+      preventDisk: true,
+      hideTrayWhenIdle: false,
+    });
+    const deps = buildDeps({ preferences: prefs as any });
+    const ctrl = new CoffeeController(deps);
+    await ctrl.activate();
+
+    await ctrl.caffeinate();
+
+    // Must consult the host before reading axes…
+    expect(prefs.refresh).toHaveBeenCalled();
+    // …so the real defaults reach the OS, not the empty-snapshot all-false set
+    // that would let the display sleep despite preventDisplay=true.
+    expect(deps.power.keepAwake).toHaveBeenCalledWith({
+      system: true,
+      display: true,
+      disk: true,
+      reason: expect.any(String),
+    });
   });
 
   it('honors preventDisplay / preventSystem / preventDisk prefs', async () => {

@@ -26,6 +26,14 @@ const STATE_KEY = 'state';
  */
 export interface PreferencesView {
   readonly values: Readonly<Record<string, unknown>>;
+  /**
+   * Re-fetch the authoritative snapshot from the host. The worker iframe can
+   * boot with an empty `values` (it may miss the `preferences:set-all` push,
+   * and pref edits are only pushed to the *view* iframe), so every caffeinate
+   * path refreshes before reading the keep-awake axes. Optional so unit tests
+   * and any non-facade injection can omit it.
+   */
+  refresh?(): Promise<unknown>;
 }
 
 /**
@@ -144,7 +152,7 @@ export class CoffeeController {
   async caffeinate(): Promise<void> {
     await this.releaseCurrentTokenIfAny();
 
-    const prefs = this.readKeepAwakePrefs();
+    const prefs = await this.readKeepAwakePrefs();
     const token = await this.deps.power.keepAwake({
       ...prefs,
       reason: 'Asyar Coffee — indefinite',
@@ -185,7 +193,15 @@ export class CoffeeController {
     }
   }
 
-  private readKeepAwakePrefs(): { system: boolean; display: boolean; disk: boolean } {
+  private async readKeepAwakePrefs(): Promise<{ system: boolean; display: boolean; disk: boolean }> {
+    // Pull the authoritative snapshot from the host first: the worker's cached
+    // `values` can be empty/stale, which would silently resolve every axis to
+    // false (display sleeps despite preventDisplay=true → "not caffeinating").
+    try {
+      await this.deps.preferences.refresh?.();
+    } catch {
+      // Host unreachable — fall back to the cached snapshot below.
+    }
     const v = this.deps.preferences.values;
     return {
       system: Boolean(v.preventSystem),
@@ -237,7 +253,7 @@ export class CoffeeController {
   private async startTimed(fireAt: number, durationMs: number): Promise<void> {
     await this.releaseCurrentTokenIfAny();
 
-    const prefs = this.readKeepAwakePrefs();
+    const prefs = await this.readKeepAwakePrefs();
     const token = await this.deps.power.keepAwake({
       ...prefs,
       reason: `Asyar Coffee — ${describeDuration(durationMs)}`,
@@ -306,7 +322,7 @@ export class CoffeeController {
 
     await this.releaseCurrentTokenIfAny();
 
-    const prefs = this.readKeepAwakePrefs();
+    const prefs = await this.readKeepAwakePrefs();
     const token = await this.deps.power.keepAwake({
       ...prefs,
       reason: `Asyar Coffee — while ${input.appName}`,
