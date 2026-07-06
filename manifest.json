@@ -1,12 +1,12 @@
 {
   "id": "org.asyar.coffee",
   "name": "Coffee",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Prevent your computer from sleeping. Cross-platform sleep-prevention utility.",
   "author": "Asyar",
   "searchable": true,
   "icon": "☕",
-  "asyarSdk": "^3.0.1",
+  "asyarSdk": "^4.0.0",
   "permissions": [
     "power:inhibit",
     "preferences:read",
