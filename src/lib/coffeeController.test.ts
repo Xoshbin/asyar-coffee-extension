@@ -107,6 +107,7 @@ export function buildDeps(
       preventDisplay: true,
       preventSystem: true,
       preventDisk: true,
+      showTray: true,
       hideTrayWhenIdle: false,
     }) as any,
     notifier: makeNotifier() as any,
@@ -137,13 +138,28 @@ describe('CoffeeController — activate', () => {
   it('hides tray when idle + hideTrayWhenIdle=true', async () => {
     const deps = buildDeps({
       preferences: makePreferences({
-        preventDisplay: true, preventSystem: true, preventDisk: true, hideTrayWhenIdle: true,
+        preventDisplay: true, preventSystem: true, preventDisk: true,
+        showTray: true, hideTrayWhenIdle: true,
       }) as any,
     });
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
     expect(deps.statusBar.registerItem).not.toHaveBeenCalled();
     expect(deps.statusBar.unregisterItem).toHaveBeenCalledWith('coffee-tray');
+  });
+
+  it('never registers the tray when showTray=false, even while caffeinated', async () => {
+    const deps = buildDeps({
+      preferences: makePreferences({
+        preventDisplay: true, preventSystem: true, preventDisk: true,
+        showTray: false, hideTrayWhenIdle: false,
+      }) as any,
+    });
+    const ctrl = new CoffeeController(deps);
+    await ctrl.activate();
+    await ctrl.caffeinate();
+    expect(deps.statusBar.registerItem).not.toHaveBeenCalled();
+    expect(deps.statusBar.updateItem).not.toHaveBeenCalled();
   });
 
   it('subscribes onSystemWake exactly once', async () => {

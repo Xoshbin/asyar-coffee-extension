@@ -6,11 +6,17 @@ import {
 } from './trayMenu';
 import type { CoffeeState } from './caffeineState';
 
-const DEFAULT_PREFS: TrayPrefs = { hideTrayWhenIdle: false };
+const DEFAULT_PREFS: TrayPrefs = { showTray: true, hideTrayWhenIdle: false };
 
 describe('trayMenu.renderTrayMenu', () => {
+  it('returns null when showTray=false, regardless of state', () => {
+    const state: CoffeeState = { mode: 'indefinite', token: 't', startedAt: 0 };
+    expect(renderTrayMenu({ mode: 'idle' }, { showTray: false, hideTrayWhenIdle: false }, 0)).toBeNull();
+    expect(renderTrayMenu(state, { showTray: false, hideTrayWhenIdle: false }, 0)).toBeNull();
+  });
+
   it('returns null when idle and hideTrayWhenIdle=true', () => {
-    expect(renderTrayMenu({ mode: 'idle' }, { hideTrayWhenIdle: true }, 0)).toBeNull();
+    expect(renderTrayMenu({ mode: 'idle' }, { showTray: true, hideTrayWhenIdle: true }, 0)).toBeNull();
   });
 
   it('returns a visible top-level item when idle and hideTrayWhenIdle=false', () => {
@@ -67,7 +73,7 @@ describe('trayMenu.renderTrayMenu', () => {
 
   it('hideTrayWhenIdle does not hide an active tray', () => {
     const state: CoffeeState = { mode: 'indefinite', token: 't', startedAt: 0 };
-    const item = renderTrayMenu(state, { hideTrayWhenIdle: true }, 0);
+    const item = renderTrayMenu(state, { showTray: true, hideTrayWhenIdle: true }, 0);
     expect(item).not.toBeNull();
   });
 });

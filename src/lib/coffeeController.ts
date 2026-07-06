@@ -218,6 +218,7 @@ export class CoffeeController {
 
   private readTrayPrefs(): TrayPrefs {
     return {
+      showTray: Boolean(this.deps.preferences.values.showTray),
       hideTrayWhenIdle: Boolean(this.deps.preferences.values.hideTrayWhenIdle),
     };
   }

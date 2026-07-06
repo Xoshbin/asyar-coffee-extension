@@ -4,12 +4,13 @@ import { describeDuration, isTimed, isWhileApp, type CoffeeState } from './caffe
 export const TRAY_ITEM_ID = 'coffee-tray';
 
 export interface TrayPrefs {
+  showTray: boolean;
   hideTrayWhenIdle: boolean;
 }
 
 /**
  * Pure render function. Null means the tray should be unregistered entirely
- * (respects `hideTrayWhenIdle` when state is idle).
+ * (master `showTray` switch, or `hideTrayWhenIdle` when state is idle).
  *
  * Submenu shape:
  *   idle   → header + "Caffeinate"
@@ -20,6 +21,8 @@ export function renderTrayMenu(
   prefs: TrayPrefs,
   nowMs: number,
 ): IStatusBarItem | null {
+  if (!prefs.showTray) return null;
+
   if (state.mode === 'idle') {
     if (prefs.hideTrayWhenIdle) return null;
     return {

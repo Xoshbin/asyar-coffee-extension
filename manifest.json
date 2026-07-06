@@ -41,9 +41,16 @@
       "default": true
     },
     {
+      "name": "showTray",
+      "type": "checkbox",
+      "title": "Show tray icon",
+      "default": false
+    },
+    {
       "name": "hideTrayWhenIdle",
       "type": "checkbox",
       "title": "Hide tray icon when decaffeinated",
+      "description": "Only applies when \"Show tray icon\" is on.",
       "default": false
     }
   ],
