@@ -88,8 +88,8 @@ function makeNotifier() {
   return {
     checkPermission: vi.fn(async () => true),
     requestPermission: vi.fn(async () => true),
-    send: vi.fn(async () => 'notif-1'),
-    dismiss: vi.fn(async () => undefined),
+    sendBackground: vi.fn(async () => 'notif-1'),
+    dismissBackground: vi.fn(async () => undefined),
   };
 }
 
@@ -322,7 +322,7 @@ describe('CoffeeController — caffeinateFor', () => {
     await ctrl.activate();
     await ctrl.caffeinateFor({ hours: 0, minutes: 0, seconds: 0 });
     expect(deps.power.keepAwake).not.toHaveBeenCalled();
-    expect(deps.notifier.send).toHaveBeenCalled();
+    expect(deps.notifier.sendBackground).toHaveBeenCalled();
     expect(ctrl.getState()).toEqual(INITIAL_STATE);
   });
 });
@@ -346,7 +346,7 @@ describe('CoffeeController — caffeinateUntil', () => {
     await ctrl.activate();
     await ctrl.caffeinateUntil({ time: '9am' });
     expect(deps.power.keepAwake).not.toHaveBeenCalled();
-    expect(deps.notifier.send).toHaveBeenCalled();
+    expect(deps.notifier.sendBackground).toHaveBeenCalled();
   });
 });
 
@@ -375,7 +375,7 @@ describe('CoffeeController — emitStatusNotification', () => {
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
     await ctrl.emitStatusNotification();
-    expect(deps.notifier.send).toHaveBeenCalledWith(
+    expect(deps.notifier.sendBackground).toHaveBeenCalledWith(
       expect.objectContaining({ body: expect.stringMatching(/decaffeinated/i) }),
     );
   });
@@ -385,9 +385,9 @@ describe('CoffeeController — emitStatusNotification', () => {
     const ctrl = new CoffeeController(deps);
     await ctrl.activate();
     await ctrl.caffeinateFor({ hours: 1, minutes: 0, seconds: 0 });
-    (deps.notifier.send as any).mockClear();
+    (deps.notifier.sendBackground as any).mockClear();
     await ctrl.emitStatusNotification();
-    expect(deps.notifier.send).toHaveBeenCalledWith(
+    expect(deps.notifier.sendBackground).toHaveBeenCalledWith(
       expect.objectContaining({ body: expect.stringContaining('1h') }),
     );
   });
@@ -402,7 +402,7 @@ describe('CoffeeController — caffeinateWhile', () => {
     await ctrl.activate();
     await ctrl.caffeinateWhile({ bundleId: 'com.apple.Safari', appName: 'Safari' });
     expect(deps.power.keepAwake).not.toHaveBeenCalled();
-    expect(deps.notifier.send).toHaveBeenCalled();
+    expect(deps.notifier.sendBackground).toHaveBeenCalled();
     expect(ctrl.getState()).toEqual(INITIAL_STATE);
   });
 

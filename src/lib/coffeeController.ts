@@ -4,7 +4,7 @@ import type {
   ITimerService,
   IApplicationService,
   ISystemEventsService,
-  INotificationService,
+  IFeedbackService,
 } from 'asyar-sdk/contracts';
 import {
   INITIAL_STATE,
@@ -55,7 +55,7 @@ export interface CoffeeControllerDeps {
   application: IApplicationService;
   systemEvents: ISystemEventsService;
   preferences: PreferencesView;
-  notifier: INotificationService;
+  notifier: IFeedbackService;
   now: () => number;
 }
 
@@ -285,7 +285,7 @@ export class CoffeeController {
 
   async emitStatusNotification(): Promise<void> {
     const body = this.describeCurrentStatus();
-    await this.deps.notifier.send({ title: 'Coffee', body });
+    await this.deps.notifier.sendBackground({ title: 'Coffee', body });
   }
 
   private describeCurrentStatus(): string {
@@ -305,7 +305,7 @@ export class CoffeeController {
 
   private async notifyError(title: string, message: string): Promise<void> {
     try {
-      await this.deps.notifier.send({ title, body: message });
+      await this.deps.notifier.sendBackground({ title, body: message });
     } catch {
       // Notification pipeline down — safe to swallow.
     }

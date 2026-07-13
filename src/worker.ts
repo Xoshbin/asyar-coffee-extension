@@ -24,7 +24,7 @@ import type {
   ExtensionContext,
   CommandExecuteArgs,
   ILogService,
-  INotificationService,
+  IFeedbackService,
   IApplicationService,
   IPowerService,
   ISystemEventsService,
@@ -54,7 +54,7 @@ const controller = new CoffeeController({
   application: workerContext.getService<IApplicationService>('application'),
   systemEvents: workerContext.getService<ISystemEventsService>('systemEvents'),
   preferences: workerContext.preferences,
-  notifier: workerContext.getService<INotificationService>('notifications'),
+  notifier: workerContext.getService<IFeedbackService>('feedback'),
   now: () => Date.now(),
 });
 
