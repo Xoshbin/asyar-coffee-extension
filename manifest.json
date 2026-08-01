@@ -81,6 +81,11 @@
       "name": "Caffeinate For",
       "description": "Prevent sleep for a specified duration",
       "icon": "⏲️",
+      "requireAnyOf": [
+        "hours",
+        "minutes",
+        "seconds"
+      ],
       "arguments": [
         {
           "name": "hours",
