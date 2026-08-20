@@ -146,7 +146,8 @@
       "schedule": {
         "intervalSeconds": 60
       },
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     }
   ],
   "type": "extension",
