@@ -1,6 +1,6 @@
 {
   "name": "org.asyar.coffee",
-  "version": "1.0.0",
+  "version": "1.3.5",
   "description": "Prevent your computer from sleeping. Cross-platform sleep-prevention utility.",
   "type": "module",
   "scripts": {
