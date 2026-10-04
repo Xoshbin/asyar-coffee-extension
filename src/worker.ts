@@ -15,10 +15,7 @@
 // `worker.html` at serve time (see `uri_schemes.rs`).
 // ───────────────────────────────────────────────────────────────────────────
 
-import {
-  ExtensionContext as WorkerExtensionContext,
-  extensionBridge,
-} from 'asyar-sdk/worker';
+import { ExtensionContext as WorkerExtensionContext, extensionBridge } from 'asyar-sdk/worker';
 import type {
   Extension,
   ExtensionContext,
@@ -35,11 +32,7 @@ import type {
 import manifest from '../manifest.json';
 import { CoffeeController } from './lib/coffeeController';
 
-const extensionId =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === 'asyar-extension.localhost'
-    ? window.location.pathname.split('/').filter(Boolean)[0] || 'org.asyar.coffee'
-    : window.location.hostname || 'org.asyar.coffee';
+const extensionId = manifest.id;
 
 const workerContext = new WorkerExtensionContext();
 workerContext.setExtensionId(extensionId);
@@ -74,10 +67,7 @@ class CoffeeWorkerExtension implements Extension {
     await controller.deactivate();
   }
 
-  async executeCommand(
-    commandId: string,
-    args?: CommandExecuteArgs,
-  ): Promise<unknown> {
+  async executeCommand(commandId: string, args?: CommandExecuteArgs): Promise<unknown> {
     const userArgs = (args?.arguments ?? {}) as Record<string, unknown>;
 
     switch (commandId) {
@@ -119,7 +109,9 @@ class CoffeeWorkerExtension implements Extension {
 
 const coffeeExtension = new CoffeeWorkerExtension();
 
-extensionBridge.registerManifest(manifest as Parameters<typeof extensionBridge.registerManifest>[0]);
+extensionBridge.registerManifest(
+  manifest as Parameters<typeof extensionBridge.registerManifest>[0],
+);
 extensionBridge.registerExtensionImplementation(extensionId, coffeeExtension);
 
 workerContext.onRequest<{ bundleId: string; appName: string }, void>(
@@ -137,10 +129,6 @@ void (async () => {
     log.error(`[${extensionId}] worker activate failed: ${msg}`);
   }
 })();
-
-window.addEventListener('beforeunload', () => {
-  void coffeeExtension.deactivate();
-});
 
 // Export the controller for unit-test access in any future worker-level
 // suite. Not imported by production code.
