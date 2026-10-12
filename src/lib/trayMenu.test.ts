@@ -1,12 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import {
   renderTrayMenu,
+  trayTitle,
   TRAY_ITEM_ID,
   type TrayPrefs,
 } from './trayMenu';
 import type { CoffeeState } from './caffeineState';
 
 const DEFAULT_PREFS: TrayPrefs = { showTray: true, hideTrayWhenIdle: false };
+
+describe('trayTitle', () => {
+  it('idle → undefined', () => {
+    expect(trayTitle({ mode: 'idle' }, 0)).toBeUndefined();
+  });
+
+  it('indefinite shows elapsed duration', () => {
+    const state: CoffeeState = { mode: 'indefinite', token: 't', startedAt: 0 };
+    expect(trayTitle(state, 4_980_000)).toBe('☕ 1h 23m');
+  });
+
+  it('timed (1h remaining) → starts with "☕ " and includes "1h"', () => {
+    const state: CoffeeState = {
+      mode: 'timed', token: 't', startedAt: 0, expiresAt: 3_600_000, timerId: 'x',
+    };
+    const result = trayTitle(state, 0);
+    expect(result).toBeDefined();
+    expect(result!.startsWith('☕ ')).toBe(true);
+    expect(result).toContain('1h');
+  });
+
+  it('while-app shows elapsed duration', () => {
+    const state: CoffeeState = {
+      mode: 'while-app', token: 't', startedAt: 0,
+      bundleId: 'com.apple.Safari', appName: 'Safari',
+    };
+    expect(trayTitle(state, 4_980_000)).toBe('☕ 1h 23m');
+  });
+});
 
 describe('trayMenu.renderTrayMenu', () => {
   it('returns null when showTray=false, regardless of state', () => {
@@ -25,6 +55,7 @@ describe('trayMenu.renderTrayMenu', () => {
     expect(item!.id).toBe(TRAY_ITEM_ID);
     expect(item!.icon).toBe('💤');
     expect(item!.text).toBe('Decaffeinated');
+    expect(item!.title).toBeUndefined();
   });
 
   it('idle submenu: header disabled + "Caffeinate"', () => {
@@ -45,6 +76,7 @@ describe('trayMenu.renderTrayMenu', () => {
     const item = renderTrayMenu(state, DEFAULT_PREFS, 0)!;
     expect(item.icon).toBe('☕');
     expect(item.text).toBe('Caffeinated');
+    expect(item.title).toBe('☕ 0s');
     expect(item.submenu).toHaveLength(2);
     const ids = item.submenu!.map((e) => e.id);
     expect(ids).toContain('decaffeinate');
@@ -56,6 +88,7 @@ describe('trayMenu.renderTrayMenu', () => {
     };
     const item = renderTrayMenu(state, DEFAULT_PREFS, 0)!;
     expect(item.text).toContain('1h');
+    expect(item.title).toContain('☕');
     expect(item.submenu).toHaveLength(3);
     expect(item.submenu![1]).toMatchObject({ enabled: false });
     expect(item.submenu![1].text).toContain('left');

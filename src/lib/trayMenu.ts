@@ -8,6 +8,15 @@ export interface TrayPrefs {
   hideTrayWhenIdle: boolean;
 }
 
+export function trayTitle(state: CoffeeState, nowMs: number): string | undefined {
+  if (state.mode === 'idle') return undefined;
+  if (state.mode === 'timed') {
+    const remaining = Math.max(0, state.expiresAt - nowMs);
+    return `☕ ${describeDuration(remaining)}`;
+  }
+  return `☕ ${describeDuration(Math.max(0, nowMs - state.startedAt))}`;
+}
+
 /**
  * Pure render function. Null means the tray should be unregistered entirely
  * (master `showTray` switch, or `hideTrayWhenIdle` when state is idle).
@@ -29,6 +38,7 @@ export function renderTrayMenu(
       id: TRAY_ITEM_ID,
       icon: '💤',
       text: 'Decaffeinated',
+      title: undefined,
       submenu: [
         { id: 'header-idle', text: 'Your mac is decaffeinated', enabled: false },
         { id: 'caffeinate', text: 'Caffeinate' },
@@ -54,6 +64,7 @@ export function renderTrayMenu(
     id: TRAY_ITEM_ID,
     icon: '☕',
     text,
+    title: trayTitle(state, nowMs),
     submenu,
   };
 }
