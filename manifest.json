@@ -59,7 +59,6 @@
       "id": "caffeinate",
       "name": "Caffeinate",
       "description": "Prevent your computer from sleeping indefinitely",
-      "icon": "☕",
       "mode": "background"
     },
     {
