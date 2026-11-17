@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="32 32 448 448">
   <defs>
     <!-- Background Gradient -->
     <linearGradient id="coffeeBg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -37,8 +37,8 @@
   <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#topSheen)" />
   <!-- Inner Specular Rim -->
   <rect x="33" y="33" width="446" height="446" rx="103" fill="none" stroke="url(#specularRim)" stroke-width="2" />
-
-  <!-- Hero Content with Drop Shadow -->
+  <g transform="translate(-102.400 -102.400) scale(1.4)">
+<!-- Hero Content with Drop Shadow -->
   <g filter="url(#heroShadow)">
     <!-- Awake Spark (✦) at the top -->
     <path d="M 256, 122 Q 256, 138 272, 138 Q 256, 138 256, 154 Q 256, 138 240, 138 Q 256, 138 256, 122 Z"
@@ -70,5 +70,6 @@
     <!-- Rich golden crema layer -->
     <ellipse cx="256" cy="274" rx="68" ry="13" fill="#92400E" opacity="0.85" />
     <ellipse cx="242" cy="272" rx="36" ry="6" fill="#F59E0B" opacity="0.4" />
+  </g>
   </g>
 </svg>
