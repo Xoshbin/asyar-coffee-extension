@@ -6,7 +6,7 @@ describe('manifest SDK compatibility', () => {
     expect(manifest.author).toBe('Asyar');
   });
 
-  it('requires the SDK version that introduced status-bar titles', () => {
-    expect(manifest.asyarSdk).toBe('^4.15.0');
+  it('requires SDK ^4.17.0', () => {
+    expect(manifest.asyarSdk).toBe('^4.17.0');
   });
 });
