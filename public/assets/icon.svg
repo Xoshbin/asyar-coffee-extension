@@ -1,24 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="32 32 448 448">
   <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="coffeeBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F59E0B" />
-      <stop offset="45%" stop-color="#D97706" />
-      <stop offset="100%" stop-color="#451A03" />
-    </linearGradient>
+<!-- Background Gradient -->
+    
 
     <!-- Top Ambient Sheen -->
-    <radialGradient id="topSheen" cx="50%" cy="12%" r="65%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.28" />
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
-    </radialGradient>
+    
 
     <!-- 1px Specular Bevel -->
-    <linearGradient id="specularRim" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45" />
-      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.12" />
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03" />
-    </linearGradient>
+    
 
     <!-- Hero Drop Shadow -->
     <filter id="heroShadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -29,15 +18,18 @@
     <filter id="starGlow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#FDE68A" flood-opacity="0.7" />
     </filter>
+    <linearGradient id="specularRim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.40" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.15" />
+    </linearGradient>
   </defs>
 
-  <!-- Base Squircle -->
-  <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#coffeeBg)" />
-  <!-- Radial Lighting Sheen -->
-  <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#topSheen)" />
-  <!-- Inner Specular Rim -->
-  <rect x="33" y="33" width="446" height="446" rx="103" fill="none" stroke="url(#specularRim)" stroke-width="2" />
-  <g transform="translate(-102.400 -102.400) scale(1.4)">
+  <!-- Solid Flat Squircle Base -->
+  <rect x="32" y="32" width="448" height="448" rx="104" fill="#D97706" />
+
+  <!-- Calibrated Glyph (~19% Optical Margin Sweet-Spot) -->
+  <g transform="translate(-30.72 -30.72) scale(1.12)">
+
 <!-- Hero Content with Drop Shadow -->
   <g filter="url(#heroShadow)">
     <!-- Awake Spark (✦) at the top -->
@@ -72,4 +64,7 @@
     <ellipse cx="242" cy="272" rx="36" ry="6" fill="#F59E0B" opacity="0.4" />
   </g>
   </g>
+
+  <!-- 2px Specular Rim Stroke -->
+  <rect x="33" y="33" width="446" height="446" rx="103" fill="none" stroke="url(#specularRim)" stroke-width="2" />
 </svg>
